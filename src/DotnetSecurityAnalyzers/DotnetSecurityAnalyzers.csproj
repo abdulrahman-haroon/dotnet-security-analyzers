@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Roslyn loads analyzers into the compiler, which needs netstandard2.0. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+
+    <!-- NuGet package -->
+    <PackageId>DotnetSecurityAnalyzers</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>dotnet-security-analyzers contributors</Authors>
+    <Description>Roslyn analyzers that catch ASP.NET Core security mistakes as you type: endpoints with no authorization, CORS that trusts every origin with credentials, hardcoded JWT signing keys, the developer exception page in production, weakened login cookies.</Description>
+    <PackageTags>roslyn analyzer security aspnetcore sast owasp</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/abdulrahman-haroon/dotnet-security-analyzers</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/abdulrahman-haroon/dotnet-security-analyzers</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- Analyzer-only package: it never becomes a runtime dependency of the consumer's app. -->
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <!-- NU5128: no lib/ folder, which is expected for an analyzer-only package. -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

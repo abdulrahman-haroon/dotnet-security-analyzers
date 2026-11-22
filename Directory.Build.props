@@ -1,0 +1,19 @@
+<Project>
+  <!-- Settings shared by every project in the repo. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
+    <!-- Run Microsoft's own security rules on this repo's code too. -->
+    <AnalysisModeSecurity>All</AnalysisModeSecurity>
+
+    <!-- Supply chain: exact versions recorded in packages.lock.json, and fail on any known-vulnerable package. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+  </PropertyGroup>
+</Project>

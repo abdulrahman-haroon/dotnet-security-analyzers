@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{67BE3F36-81BB-4B42-A763-ACAF382A496E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetSecurityAnalyzers", "src\DotnetSecurityAnalyzers\DotnetSecurityAnalyzers.csproj", "{9121FFB7-6978-4DA8-A527-3AC05613B178}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{BE2CF8A7-9CF6-4F86-97C0-9F1E8C144749}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetSecurityAnalyzers.Tests", "tests\DotnetSecurityAnalyzers.Tests\DotnetSecurityAnalyzers.Tests.csproj", "{AA6BF1C6-9CCA-4E12-BF51-F9A7007E1F80}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{46D65E99-8A7E-46FB-8CF3-BEAFECFF8CCF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulnerableApp", "samples\VulnerableApp\VulnerableApp.csproj", "{B083B8DF-11DB-4352-8797-27E442A5F516}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9121FFB7-6978-4DA8-A527-3AC05613B178}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9121FFB7-6978-4DA8-A527-3AC05613B178}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9121FFB7-6978-4DA8-A527-3AC05613B178}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9121FFB7-6978-4DA8-A527-3AC05613B178}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA6BF1C6-9CCA-4E12-BF51-F9A7007E1F80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA6BF1C6-9CCA-4E12-BF51-F9A7007E1F80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA6BF1C6-9CCA-4E12-BF51-F9A7007E1F80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA6BF1C6-9CCA-4E12-BF51-F9A7007E1F80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B083B8DF-11DB-4352-8797-27E442A5F516}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B083B8DF-11DB-4352-8797-27E442A5F516}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B083B8DF-11DB-4352-8797-27E442A5F516}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B083B8DF-11DB-4352-8797-27E442A5F516}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9121FFB7-6978-4DA8-A527-3AC05613B178} = {67BE3F36-81BB-4B42-A763-ACAF382A496E}
+		{AA6BF1C6-9CCA-4E12-BF51-F9A7007E1F80} = {BE2CF8A7-9CF6-4F86-97C0-9F1E8C144749}
+		{B083B8DF-11DB-4352-8797-27E442A5F516} = {46D65E99-8A7E-46FB-8CF3-BEAFECFF8CCF}
+	EndGlobalSection
+EndGlobal

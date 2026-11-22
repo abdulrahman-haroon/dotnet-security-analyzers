@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Deliberately insecure demo app: building it shows every DSA rule firing. Never deploy it. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <!-- Keep the DSA findings visible as warnings instead of failing the build. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);DSA001;DSA002;DSA003;DSA004;DSA005</WarningsNotAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Use the analyzer straight from source, the same way the NuGet package plugs into a build. -->
+    <ProjectReference Include="..\..\src\DotnetSecurityAnalyzers\DotnetSecurityAnalyzers.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

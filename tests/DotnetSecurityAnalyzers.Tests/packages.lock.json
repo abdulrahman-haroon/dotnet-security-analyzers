@@ -706,9 +706,9 @@
       },
       "System.Formats.Asn1": {
         "type": "CentralTransitive",
-        "requested": "[8.0.2, )",
-        "resolved": "8.0.2",
-        "contentHash": "yUsFqNGa7tbwm5QOOnOR3VSoh8a0Yki39mTbhOnErdbg8hVSFtrK0EXerj286PXcegiF1LkE7lL++qqMZW5jIQ=="
+        "requested": "[10.0.15, )",
+        "resolved": "10.0.15",
+        "contentHash": "v74r4sIPf6jj80nBIISv4duxjrEvuyAOPQFHb7EePO7elvjfjGsdMpG8lbTm1nG+osyvXLg80A9qsygaTfsjrQ=="
       }
     }
   }

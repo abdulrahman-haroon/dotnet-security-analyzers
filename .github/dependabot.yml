@@ -4,6 +4,14 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # Roslyn is pinned on purpose: the analyzer's Roslyn version is the OLDEST compiler it can run in
+      # (4.8 = VS 2022 17.8 / .NET 8 SDK). Raising it drops older IDEs/SDKs. Bump by hand, deliberately.
+      # The test library is tied to the same Roslyn version.
+      - dependency-name: "Microsoft.CodeAnalysis.CSharp"
+      - dependency-name: "Microsoft.CodeAnalysis.CSharp.Workspaces"
+      - dependency-name: "Microsoft.CodeAnalysis.Analyzers"
+      - dependency-name: "Microsoft.CodeAnalysis.CSharp.Analyzer.Testing"
   - package-ecosystem: github-actions
     directory: /
     schedule:

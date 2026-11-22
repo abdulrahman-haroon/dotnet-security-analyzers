@@ -1,0 +1,24 @@
+name: New rule idea
+description: Suggest a security mistake this package should detect.
+labels: ["rule idea"]
+body:
+  - type: textarea
+    id: mistake
+    attributes:
+      label: The mistake
+      description: What do developers write, and why is it dangerous?
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example code (vulnerable and fixed)
+      render: csharp
+    validations:
+      required: true
+  - type: checkboxes
+    id: checked
+    attributes:
+      label: Not already covered
+      options:
+        - label: I checked that Microsoft's built-in rules don't catch it (with `<AnalysisModeSecurity>All</AnalysisModeSecurity>` turned on).

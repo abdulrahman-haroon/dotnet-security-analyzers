@@ -1,0 +1,24 @@
+name: Missed issue
+description: Insecure code that a rule should have caught, but didn't.
+labels: ["false negative"]
+body:
+  - type: input
+    id: rule
+    attributes:
+      label: Rule ID (if you think an existing rule should catch it)
+      placeholder: DSA003
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: Code that should have been flagged
+      description: Please use fake values. Never paste real secrets.
+      render: csharp
+    validations:
+      required: true

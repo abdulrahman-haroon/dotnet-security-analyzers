@@ -1,0 +1,108 @@
+name: Real-world check
+
+# Builds well-known open-source ASP.NET Core apps (pinned commits) with our analyzer plugged in,
+# then reports every DSA warning and the build-time overhead. Used to measure false positives.
+# Third-party code runs only here, on a throwaway GitHub runner: no secrets, read-only token.
+# Run it from the Actions tab -> "Real-world check" -> "Run workflow".
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: eShopOnWeb
+            repo: dotnet-architecture/eShopOnWeb
+            sha: 4da8212117e87d808d4bbc7da6286fd2147ce606
+            targets: src/Web/Web.csproj src/PublicApi/PublicApi.csproj
+          - name: CleanArchitecture
+            repo: jasontaylordev/CleanArchitecture
+            sha: 9e1042be109b6b73488695bcd6840c8ea78db5f0
+            targets: CleanArchitecture.slnx
+          - name: fullstackhero
+            repo: fullstackhero/dotnet-starter-kit
+            sha: 2f5989b243d702e0e2f089bd0258117da05f32e7
+            targets: src/FSH.Starter.slnx
+          - name: nopCommerce
+            repo: nopSolutions/nopCommerce
+            sha: 9cdf7a5fc7e941e2a6100ded2e85b6f47f5b1d26
+            targets: src/Presentation/Nop.Web/Nop.Web.csproj
+    env:
+      REPO: ${{ matrix.repo }}
+      SHA: ${{ matrix.sha }}
+      TARGETS: ${{ matrix.targets }}
+      NAME: ${{ matrix.name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: dsa
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Build our analyzer
+        run: dotnet build dsa/src/DotnetSecurityAnalyzers -c Release
+
+      - name: Fetch the app at its pinned commit
+        run: |
+          git init -q app
+          git -C app fetch -q --depth 1 "https://github.com/$REPO.git" "$SHA"
+          git -C app checkout -q FETCH_HEAD
+          # Use the newest installed SDK instead of the app's exact pin.
+          rm -f app/global.json
+          for t in $TARGETS; do dotnet restore "app/$t"; done
+
+      # The "with analyzer" build runs FIRST, so any warm-up advantage goes to the baseline:
+      # the measured overhead is, if anything, too high.
+      - name: Build with and without the analyzer
+        run: |
+          INJECT="$GITHUB_WORKSPACE/dsa/eng/realworld/inject.targets"
+          DLL="$GITHUB_WORKSPACE/dsa/src/DotnetSecurityAnalyzers/bin/Release/netstandard2.0/DotnetSecurityAnalyzers.dll"
+          build() {
+            for t in $TARGETS; do
+              dotnet build "app/$t" --no-restore --no-incremental -c Debug -nodeReuse:false \
+                -p:CustomAfterMicrosoftCommonTargets="$INJECT" "$@"
+            done
+          }
+          start=$(date +%s); build -p:DsaAnalyzerPath="$DLL" > with.log 2>&1 || { tail -50 with.log; exit 1; }; with=$(( $(date +%s) - start ))
+          start=$(date +%s); build > without.log 2>&1 || { tail -50 without.log; exit 1; }; without=$(( $(date +%s) - start ))
+
+          grep -oE "[^ ]+\.cs\([0-9]+,[0-9]+\): warning DSA[0-9]+: [^[]*" with.log \
+            | sed "s#^$GITHUB_WORKSPACE/app/##" | sort -u > warnings.txt || true
+
+          {
+            echo "## $NAME ($REPO@${SHA:0:12})"
+            echo "Build time: **${without}s** without, **${with}s** with the analyzer."
+            echo
+            echo "| Rule | Warnings |"
+            echo "|------|----------|"
+            grep -oE "warning DSA[0-9]+" warnings.txt | sort | uniq -c | awk '{print "| " $3 " | " $1 " |"}'
+            echo
+            echo "<details><summary>All warnings ($(wc -l < warnings.txt))</summary>"
+            echo
+            echo '```'
+            head -300 warnings.txt
+            echo '```'
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: realworld-${{ matrix.name }}
+          path: |
+            warnings.txt
+            with.log
+          if-no-files-found: ignore

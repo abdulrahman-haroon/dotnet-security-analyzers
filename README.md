@@ -1,5 +1,10 @@
 # dotnet-security-analyzers
 
+[![NuGet](https://img.shields.io/nuget/v/DotnetSecurityAnalyzers.svg)](https://www.nuget.org/packages/DotnetSecurityAnalyzers)
+[![Downloads](https://img.shields.io/nuget/dt/DotnetSecurityAnalyzers.svg)](https://www.nuget.org/packages/DotnetSecurityAnalyzers)
+[![CI](https://github.com/abdulrahman-haroon/dotnet-security-analyzers/actions/workflows/ci.yml/badge.svg)](https://github.com/abdulrahman-haroon/dotnet-security-analyzers/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Roslyn analyzers that catch **ASP.NET Core security mistakes as you type**, in Visual Studio, Rider, VS Code and `dotnet build`. Free, open source, MIT.
 
 ```
@@ -82,6 +87,7 @@ For one line of code: `#pragma warning disable DSA001`, together with a comment 
 - [tests/DotnetSecurityAnalyzers.Tests/](tests/DotnetSecurityAnalyzers.Tests/): tests, with code that must warn and code that must not.
 - [samples/VulnerableApp/](samples/VulnerableApp/): a deliberately insecure demo app. Building it shows every rule firing.
 - [docs/rules/](docs/rules/): one page per rule.
+- [eng/realworld/](eng/realworld/): build hook used by the *Real-world check* workflow, which runs the analyzers on popular open-source ASP.NET Core apps to catch false positives.
 
 ## 7. Build from source
 
@@ -96,13 +102,7 @@ dotnet build samples/VulnerableApp   # see the warnings
 
 ## 8. Contributing
 
-Issues and pull requests are welcome. A new rule needs:
-1. the analyzer in `src/`,
-2. tests in `tests/` (at least one case that warns and one that doesn't),
-3. a page in `docs/rules/`,
-4. a line in `src/DotnetSecurityAnalyzers/AnalyzerReleases.Unshipped.md`.
-
-Before proposing a rule, check it is not already covered by a built-in CA rule (section 4).
+Issues and pull requests are welcome. False-positive reports are fixed first. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to build, test and add a rule.
 
 ## 9. Security
 

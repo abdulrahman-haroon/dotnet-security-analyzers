@@ -1,0 +1,15 @@
+<Project>
+  <!--
+    Imported into a third-party project's build via
+      -p:CustomAfterMicrosoftCommonTargets=<this file>
+    Adds our analyzer (when DsaAnalyzerPath is set) without touching the project's files,
+    and stops the project's own warnings-as-errors settings from failing the build.
+  -->
+  <ItemGroup Condition="'$(DsaAnalyzerPath)' != ''">
+    <Analyzer Include="$(DsaAnalyzerPath)" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

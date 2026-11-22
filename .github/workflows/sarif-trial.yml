@@ -41,7 +41,17 @@ jobs:
           dotnet build samples/VulnerableApp --no-restore -p:CustomAfterMicrosoftCommonTargets="$RUNNER_TEMP/sarif.targets"
           ls -la sarif
 
+      # Code scanning rejects several runs with the same category in one upload (GitHub change, July 2025),
+      # and the compiler writes one run per project. Give each project's run its own category.
+      - name: One category per project
+        run: |
+          for f in sarif/*.sarif; do
+            project=$(basename "$f" .sarif)
+            sed -i '1s/^\xEF\xBB\xBF//' "$f"   # safety net: jq rejects a UTF-8 BOM if one is ever written
+            jq --arg id "sarif-trial/$project/" '.runs[].automationDetails = {id: $id}' "$f" > "$f.tmp"
+            mv "$f.tmp" "$f"
+          done
+
       - uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           sarif_file: sarif
-          category: sarif-trial

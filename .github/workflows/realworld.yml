@@ -89,7 +89,7 @@ jobs:
           echo "ANALYZER-TIME $NAME ours=${ours}s all-analyzers=${total}s"
 
           grep -oE "[^ ]+\.cs\([0-9]+,[0-9]+\): warning DSA[0-9]+: [^[]*" with.log \
-            | sed "s#^$GITHUB_WORKSPACE/app/##" | sort -u > warnings.txt || true
+            | sed -E "s#^[0-9:]+>##; s#^$GITHUB_WORKSPACE/app/##" | sort -u > warnings.txt || true
 
           {
             echo "## $NAME ($REPO@${SHA:0:12})"

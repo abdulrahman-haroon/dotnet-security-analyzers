@@ -58,6 +58,17 @@ Before each release, the analyzers run against popular open-source ASP.NET Core 
 
 **0 false positives** in about 1,300 endpoints. Every warning is either a real security risk or a public endpoint that doesn't say it's public, which is what DSA001 asks you to make explicit.
 
+**Speed.** Time the compiler spent inside this package, as reported by the compiler itself (`-p:ReportAnalyzer=true`):
+
+| App | Our analyzers | All analyzers in that build | Full build |
+|-----|---------------|-----------------------------|------------|
+| CleanArchitecture | 0.07 s | 0.8 s | ~10 s |
+| eShopOnWeb | 0.12 s | 3.0 s | ~20 s |
+| fullstackhero | 0.10 s | 88.8 s | ~60 s |
+| nopCommerce | 0.28 s | 9.3 s | ~50 s |
+
+That is well under 1% of build time.
+
 ## 4. Turn on Microsoft's built-in security rules too
 
 The .NET SDK already ships many security rules (SQL injection, weak crypto, insecure deserialization, disabled certificate or token validation, and more), but **most are switched off by default**. This package does not repeat them. Turn them on by adding one line to your `.csproj`:

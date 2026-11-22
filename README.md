@@ -107,7 +107,53 @@ For one line of code: `#pragma warning disable DSA001`, together with a comment 
 
 **Test projects are skipped automatically.** Projects that reference xUnit, NUnit, MSTest, TUnit or `Microsoft.AspNetCore.Mvc.Testing` get no DSA warnings, because fake keys and throwaway endpoints are normal there.
 
-## 6. How the repo is organised
+## 6. See findings in GitHub's Security tab (optional)
+
+You can send the warnings to **Security → Code scanning** on GitHub, where they show up as alerts on pull requests and stay tracked until fixed. Code scanning is free for public repositories; private repositories need GitHub Code Security.
+
+**Step 1.** Add this to a `Directory.Build.props` at the root of your repo. It makes the compiler write one SARIF file per project, only when building in GitHub Actions:
+
+```xml
+<Project>
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ErrorLog>$(MSBuildThisFileDirectory)sarif/$(MSBuildProjectName).sarif,version=2.1</ErrorLog>
+  </PropertyGroup>
+</Project>
+```
+
+**Step 2.** Add a workflow (or these steps to your existing one):
+
+```yaml
+permissions:
+  contents: read
+  security-events: write   # lets the job upload results to code scanning
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7          # pin actions to a commit SHA in real use
+      - uses: actions/setup-dotnet@v6
+      - run: mkdir -p sarif                # the compiler won't create the folder itself
+      - run: dotnet build
+
+      # GitHub rejects several results files from the same tool in one upload,
+      # so give each project its own category.
+      - name: One code-scanning category per project
+        run: |
+          for f in sarif/*.sarif; do
+            jq --arg id "dotnet-build/$(basename "$f" .sarif)/" '.runs[].automationDetails = {id: $id}' "$f" > "$f.tmp"
+            mv "$f.tmp" "$f"
+          done
+
+      - uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: sarif
+```
+
+The SARIF files contain **all** compiler warnings, not just DSA ones, so other analyzer warnings in your build will appear in code scanning too.
+
+## 7. How the repo is organised
 
 - [src/DotnetSecurityAnalyzers/](src/DotnetSecurityAnalyzers/): the analyzers (one file per rule). Rule release tracking: [Unshipped](src/DotnetSecurityAnalyzers/AnalyzerReleases.Unshipped.md) / [Shipped](src/DotnetSecurityAnalyzers/AnalyzerReleases.Shipped.md).
 - [src/DotnetSecurityAnalyzers.CodeFixes/](src/DotnetSecurityAnalyzers.CodeFixes/): the one-click fixes (one file per rule).
@@ -117,7 +163,7 @@ For one line of code: `#pragma warning disable DSA001`, together with a comment 
 - [docs/rules/](docs/rules/): one page per rule.
 - [eng/realworld/](eng/realworld/): build hook used by the *Real-world check* workflow, which runs the analyzers on popular open-source ASP.NET Core apps to catch false positives.
 
-## 7. Build from source
+## 8. Build from source
 
 Needs the .NET 8 SDK (`global.json` pins it).
 
@@ -128,11 +174,11 @@ dotnet test
 dotnet build samples/VulnerableApp   # see the warnings
 ```
 
-## 8. Contributing
+## 9. Contributing
 
 Issues and pull requests are welcome. False-positive reports are fixed first. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to build, test and add a rule.
 
-## 9. Security
+## 10. Security
 
 Found a vulnerability in this project? Please report it privately. See [SECURITY.md](SECURITY.md).
 

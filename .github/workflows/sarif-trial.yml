@@ -1,0 +1,47 @@
+name: SARIF trial
+
+# One-off check for the README guide "See findings in GitHub's Security tab":
+# builds the deliberately vulnerable sample app with SARIF output (one file per project,
+# like a real solution) and uploads it to code scanning under the category "sarif-trial".
+# Delete this workflow once the guide is verified.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sarif:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write # needed to upload SARIF to code scanning
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+
+      # Same setting the guide tells users to put in Directory.Build.props, injected here so the repo is unchanged.
+      - name: Build with SARIF output
+        run: |
+          mkdir -p sarif
+          cat > "$RUNNER_TEMP/sarif.targets" <<'EOF'
+          <Project>
+            <PropertyGroup>
+              <ErrorLog>$(GITHUB_WORKSPACE)/sarif/$(MSBuildProjectName).sarif,version=2.1</ErrorLog>
+            </PropertyGroup>
+          </Project>
+          EOF
+          dotnet restore --locked-mode
+          dotnet build samples/VulnerableApp --no-restore -p:CustomAfterMicrosoftCommonTargets="$RUNNER_TEMP/sarif.targets"
+          ls -la sarif
+
+      - uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
+        with:
+          sarif_file: sarif
+          category: sarif-trial

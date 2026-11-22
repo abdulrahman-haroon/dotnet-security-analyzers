@@ -24,7 +24,10 @@ internal static class Verify<TAnalyzer>
                 Path.Combine("ref", "net8.0"))
             .AddPackages(ImmutableArray.Create(
                 new PackageIdentity("Microsoft.AspNetCore.App.Ref", "8.0.20"),
-                new PackageIdentity("Microsoft.IdentityModel.Tokens", "8.14.0")));
+                new PackageIdentity("Microsoft.IdentityModel.Tokens", "8.14.0"),
+                new PackageIdentity("Microsoft.EntityFrameworkCore", "8.0.8"),
+                new PackageIdentity("Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore", "8.0.8"),
+                new PackageIdentity("Grpc.AspNetCore.Server", "2.67.0")));
 
     public static Task AnalyzerAsync(string source, params MetadataReference[] extraReferences)
     {

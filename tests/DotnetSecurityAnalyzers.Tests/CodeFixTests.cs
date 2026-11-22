@@ -197,6 +197,58 @@ public class UnguardedDeveloperExceptionPageCodeFixTests
         """, "DSA004.Remove");
 
     [Fact]
+    public Task Wraps_an_assignment_using_builder_Environment() => Fix("""
+        using Microsoft.AspNetCore.Builder;
+        using Microsoft.IdentityModel.Logging;
+
+        public static class Setup
+        {
+            public static void Configure(WebApplicationBuilder builder)
+            {
+                {|DSA004:IdentityModelEventSource.ShowPII = true|};
+            }
+        }
+        """, """
+        using Microsoft.AspNetCore.Builder;
+        using Microsoft.Extensions.Hosting;
+        using Microsoft.IdentityModel.Logging;
+
+        public static class Setup
+        {
+            public static void Configure(WebApplicationBuilder builder)
+            {
+                if (builder.Environment.IsDevelopment())
+                {
+                    IdentityModelEventSource.ShowPII = true;
+                }
+            }
+        }
+        """, "DSA004.Wrap");
+
+    [Fact]
+    public Task Remove_is_only_offered_for_the_exception_page() => Fix("""
+        using Microsoft.AspNetCore.Builder;
+
+        public static class Pipeline
+        {
+            public static void Configure(WebApplication app)
+            {
+                {|DSA004:app.UseMigrationsEndPoint()|};
+            }
+        }
+        """, """
+        using Microsoft.AspNetCore.Builder;
+
+        public static class Pipeline
+        {
+            public static void Configure(WebApplication app)
+            {
+                {|DSA004:app.UseMigrationsEndPoint()|};
+            }
+        }
+        """, "DSA004.Remove");
+
+    [Fact]
     public Task Uses_the_environment_parameter_in_Startup_style_code() => Fix("""
         using Microsoft.AspNetCore.Builder;
         using Microsoft.AspNetCore.Hosting;

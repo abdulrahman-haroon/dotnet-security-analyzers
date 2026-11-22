@@ -32,17 +32,22 @@ public sealed class UnguardedDeveloperExceptionPageCodeFix : CodeFixProvider
         if (root is null || model is null)
             return;
 
-        // Only a stand-alone statement `x.UseDeveloperExceptionPage();` can be wrapped or removed safely.
-        if (root.FindNode(context.Diagnostics[0].Location.SourceSpan, getInnermostNodeForTie: true)
-                .FirstAncestorOrSelf<InvocationExpressionSyntax>() is not { Expression: MemberAccessExpressionSyntax member, Parent: ExpressionStatementSyntax statement })
+        // Only a stand-alone statement (`app.UseDeveloperExceptionPage();`, `options.DetailedErrors = true;`)
+        // can be wrapped or removed safely; inside a fluent chain or an expression lambda there is nothing to wrap.
+        var diagnostic = context.Diagnostics[0];
+        if (root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true)
+                .FirstAncestorOrSelf<ExpressionStatementSyntax>() is not { } statement ||
+            statement.Expression.Span != diagnostic.Location.SourceSpan)
             return;
 
-        var receiverType = model.GetTypeInfo(member.Expression, context.CancellationToken).Type;
-        var isWebApplication = receiverType?.ToDisplayString() == "Microsoft.AspNetCore.Builder.WebApplication";
+        // `app.UseX()` on a WebApplication: use app.Environment directly.
+        var receiver = (statement.Expression as InvocationExpressionSyntax)?.Expression is MemberAccessExpressionSyntax member ? member.Expression : null;
+        var isWebApplication = receiver is not null &&
+                               model.GetTypeInfo(receiver, context.CancellationToken).Type?.ToDisplayString() == WebApplication;
 
         var environment = isWebApplication
-            ? SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, member.Expression.WithoutTrivia(), SyntaxFactory.IdentifierName("Environment"))
-            : FindEnvironmentInScope(model, statement, context.CancellationToken);
+            ? SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, receiver!.WithoutTrivia(), SyntaxFactory.IdentifierName("Environment"))
+            : FindEnvironmentInScope(model, statement);
 
         if (environment is not null)
         {
@@ -54,7 +59,9 @@ public sealed class UnguardedDeveloperExceptionPageCodeFix : CodeFixProvider
                 context.Diagnostics[0]);
         }
 
-        if (isWebApplication)
+        // Only the exception page is turned on automatically by WebApplication in Development.
+        diagnostic.Properties.TryGetValue(UnguardedDeveloperExceptionPageAnalyzer.FeatureProperty, out var feature);
+        if (isWebApplication && feature == "UseDeveloperExceptionPage()")
         {
             context.RegisterCodeFix(
                 CodeAction.Create(
@@ -65,18 +72,29 @@ public sealed class UnguardedDeveloperExceptionPageCodeFix : CodeFixProvider
         }
     }
 
-    // A parameter or local of type IHostEnvironment (IWebHostEnvironment derives from it), e.g. Startup.Configure(app, env).
-    private static ExpressionSyntax? FindEnvironmentInScope(SemanticModel model, SyntaxNode position, CancellationToken cancellationToken)
+    private const string WebApplication = "Microsoft.AspNetCore.Builder.WebApplication";
+    private const string WebApplicationBuilder = "Microsoft.AspNetCore.Builder.WebApplicationBuilder";
+
+    /// <summary>
+    /// An environment visible at this point: a parameter/local of type IHostEnvironment (e.g. Startup.Configure(app, env)),
+    /// or a WebApplication / WebApplicationBuilder variable (`builder.Environment`). Null if there is none.
+    /// </summary>
+    private static ExpressionSyntax? FindEnvironmentInScope(SemanticModel model, SyntaxNode position)
     {
         var hostEnvironment = model.Compilation.GetTypeByMetadataName("Microsoft.Extensions.Hosting.IHostEnvironment");
-        if (hostEnvironment is null)
-            return null;
+        var visible = model.LookupSymbols(position.SpanStart)
+            .Select(s => (Symbol: s, Type: (s as IParameterSymbol)?.Type ?? (s as ILocalSymbol)?.Type))
+            .Where(s => s.Type is not null)
+            .ToList();
 
-        var symbol = model.LookupSymbols(position.SpanStart).FirstOrDefault(s =>
-            (s is IParameterSymbol p && Symbols.IsOrInherits(p.Type, hostEnvironment)) ||
-            (s is ILocalSymbol l && Symbols.IsOrInherits(l.Type, hostEnvironment)));
+        if (hostEnvironment is not null && visible.FirstOrDefault(s => Symbols.IsOrInherits(s.Type, hostEnvironment)).Symbol is { } env)
+            return SyntaxFactory.IdentifierName(env.Name);
 
-        return symbol is null ? null : SyntaxFactory.IdentifierName(symbol.Name);
+        var host = visible.FirstOrDefault(s => s.Type!.ToDisplayString() is WebApplication or WebApplicationBuilder).Symbol;
+        return host is null
+            ? null
+            : SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                SyntaxFactory.IdentifierName(host.Name), SyntaxFactory.IdentifierName("Environment"));
     }
 
     private static Task<Document> WrapAsync(Document document, SyntaxNode root, SemanticModel model, ExpressionStatementSyntax statement,

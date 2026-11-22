@@ -20,7 +20,7 @@ Some security bugs are easy to write and easy to miss in code review:
 - an endpoint with no `[Authorize]`, so anyone can call it,
 - a CORS policy that lets **any website** make logged-in requests to your API,
 - a JWT signing key pasted into the code, so anyone can forge tokens,
-- the developer error page left on in production,
+- debug features left on in production (error pages, sensitive-data logging, detailed errors),
 - a login cookie that JavaScript can read or that travels over plain HTTP.
 
 This package flags them in the editor, before the code is committed, and **fixes most of them in one click** (lightbulb / `Ctrl+.`). It is built to **avoid false alarms**: when it can't be sure (for example, the app protects every endpoint globally), it stays silent.
@@ -40,7 +40,7 @@ That's all. Warnings appear in your IDE and in `dotnet build`. The package adds 
 | [DSA001](docs/rules/DSA001.md) | Controller action or minimal API endpoint with no authorization (understands route groups and app-wide fallback policies) | Add `[Authorize]` / `.RequireAuthorization()`, or `[AllowAnonymous]` / `.AllowAnonymous()` | OWASP A01, CWE-862 |
 | [DSA002](docs/rules/DSA002.md) | CORS policy that allows every origin **and** credentials | Replace with `WithOrigins(...)` | OWASP A05, CWE-942 |
 | [DSA003](docs/rules/DSA003.md) | JWT signing key (`SymmetricSecurityKey`) hardcoded in source, also through variables | — (needs a human: move it to a secret store) | OWASP A02, CWE-321 |
-| [DSA004](docs/rules/DSA004.md) | `UseDeveloperExceptionPage()` not limited to Development | Wrap in `if (IsDevelopment())`, or remove it | OWASP A05, CWE-209 |
+| [DSA004](docs/rules/DSA004.md) | Debug features left on in production: developer exception page, migrations endpoint, EF sensitive-data logging, detailed errors (SignalR, gRPC, Blazor), `ShowPII` | Wrap in `if (IsDevelopment())`, or remove it | OWASP A05, CWE-209, CWE-532 |
 | [DSA005](docs/rules/DSA005.md) | Auth/session/antiforgery cookie with `HttpOnly = false` or `SecurePolicy = None` | Set the safe value | OWASP A05, CWE-614, CWE-1004 |
 
 Each rule page explains the risk, shows the fix, and lists the rule's known limits. Every fix also works as **Fix all** across a document, project or solution.

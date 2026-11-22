@@ -21,6 +21,10 @@ builder.Services.AddSession(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.None;
 });
 
+// DSA004: SignalR sends exception details to clients; identity logs include personal data.
+builder.Services.AddSignalR(options => options.EnableDetailedErrors = true);
+Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+
 var app = builder.Build();
 
 // DSA004: shows stack traces to everyone, including in production.

@@ -23,7 +23,7 @@ Some security bugs are easy to write and easy to miss in code review:
 - the developer error page left on in production,
 - a login cookie that JavaScript can read or that travels over plain HTTP.
 
-This package flags them in the editor, before the code is committed. It is built to **avoid false alarms**: when it can't be sure (for example, the app protects every endpoint globally), it stays silent.
+This package flags them in the editor, before the code is committed, and **fixes most of them in one click** (lightbulb / `Ctrl+.`). It is built to **avoid false alarms**: when it can't be sure (for example, the app protects every endpoint globally), it stays silent.
 
 ## 2. Install
 
@@ -35,15 +35,15 @@ That's all. Warnings appear in your IDE and in `dotnet build`. The package adds 
 
 ## 3. Rules
 
-| ID | What it finds | Maps to |
-|----|---------------|---------|
-| [DSA001](docs/rules/DSA001.md) | Controller action or minimal API endpoint with no authorization (understands route groups and app-wide fallback policies) | OWASP A01, CWE-862 |
-| [DSA002](docs/rules/DSA002.md) | CORS policy that allows every origin **and** credentials | OWASP A05, CWE-942 |
-| [DSA003](docs/rules/DSA003.md) | JWT signing key (`SymmetricSecurityKey`) hardcoded in source, also through variables | OWASP A02, CWE-321 |
-| [DSA004](docs/rules/DSA004.md) | `UseDeveloperExceptionPage()` not limited to Development | OWASP A05, CWE-209 |
-| [DSA005](docs/rules/DSA005.md) | Auth/session/antiforgery cookie with `HttpOnly = false` or `SecurePolicy = None` | OWASP A05, CWE-614, CWE-1004 |
+| ID | What it finds | One-click fix | Maps to |
+|----|---------------|---------------|---------|
+| [DSA001](docs/rules/DSA001.md) | Controller action or minimal API endpoint with no authorization (understands route groups and app-wide fallback policies) | Add `[Authorize]` / `.RequireAuthorization()`, or `[AllowAnonymous]` / `.AllowAnonymous()` | OWASP A01, CWE-862 |
+| [DSA002](docs/rules/DSA002.md) | CORS policy that allows every origin **and** credentials | Replace with `WithOrigins(...)` | OWASP A05, CWE-942 |
+| [DSA003](docs/rules/DSA003.md) | JWT signing key (`SymmetricSecurityKey`) hardcoded in source, also through variables | — (needs a human: move it to a secret store) | OWASP A02, CWE-321 |
+| [DSA004](docs/rules/DSA004.md) | `UseDeveloperExceptionPage()` not limited to Development | Wrap in `if (IsDevelopment())`, or remove it | OWASP A05, CWE-209 |
+| [DSA005](docs/rules/DSA005.md) | Auth/session/antiforgery cookie with `HttpOnly = false` or `SecurePolicy = None` | Set the safe value | OWASP A05, CWE-614, CWE-1004 |
 
-Each rule page explains the risk, shows the fix, and lists the rule's known limits.
+Each rule page explains the risk, shows the fix, and lists the rule's known limits. Every fix also works as **Fix all** across a document, project or solution.
 
 ### Tested on real apps
 
@@ -109,7 +109,9 @@ For one line of code: `#pragma warning disable DSA001`, together with a comment 
 
 ## 6. How the repo is organised
 
-- [src/DotnetSecurityAnalyzers/](src/DotnetSecurityAnalyzers/): the analyzers (one file per rule), packed into the NuGet package. Rule release tracking: [Unshipped](src/DotnetSecurityAnalyzers/AnalyzerReleases.Unshipped.md) / [Shipped](src/DotnetSecurityAnalyzers/AnalyzerReleases.Shipped.md).
+- [src/DotnetSecurityAnalyzers/](src/DotnetSecurityAnalyzers/): the analyzers (one file per rule). Rule release tracking: [Unshipped](src/DotnetSecurityAnalyzers/AnalyzerReleases.Unshipped.md) / [Shipped](src/DotnetSecurityAnalyzers/AnalyzerReleases.Shipped.md).
+- [src/DotnetSecurityAnalyzers.CodeFixes/](src/DotnetSecurityAnalyzers.CodeFixes/): the one-click fixes (one file per rule).
+- [src/DotnetSecurityAnalyzers.Package/](src/DotnetSecurityAnalyzers.Package/): builds the single NuGet package containing both.
 - [tests/DotnetSecurityAnalyzers.Tests/](tests/DotnetSecurityAnalyzers.Tests/): tests, with code that must warn and code that must not.
 - [samples/VulnerableApp/](samples/VulnerableApp/): a deliberately insecure demo app. Building it shows every rule firing.
 - [docs/rules/](docs/rules/): one page per rule.

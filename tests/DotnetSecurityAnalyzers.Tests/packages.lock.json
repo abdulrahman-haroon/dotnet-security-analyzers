@@ -12,6 +12,16 @@
           "Microsoft.CodeAnalysis.CSharp.Workspaces": "1.0.1"
         }
       },
+      "Microsoft.CodeAnalysis.CSharp.CodeFix.Testing": {
+        "type": "Direct",
+        "requested": "[1.1.2, )",
+        "resolved": "1.1.2",
+        "contentHash": "vMSf/SJw6T9bYUuwRLNd+sjvmapSGc+58uxgANbt5sL55eezUPHZ1cd3XkafzPsGWcl7z31xoRUM94smnNrnIA==",
+        "dependencies": {
+          "Microsoft.CodeAnalysis.CSharp.Workspaces": "1.0.1",
+          "Microsoft.CodeAnalysis.CodeFix.Testing": "[1.1.2]"
+        }
+      },
       "Microsoft.CodeAnalysis.CSharp.Workspaces": {
         "type": "Direct",
         "requested": "[4.8.0, )",
@@ -78,6 +88,15 @@
           "NuGet.Packaging": "6.3.4",
           "NuGet.Protocol": "6.3.4",
           "NuGet.Resolver": "6.3.4"
+        }
+      },
+      "Microsoft.CodeAnalysis.CodeFix.Testing": {
+        "type": "Transitive",
+        "resolved": "1.1.2",
+        "contentHash": "fnR6AOMlXvMcYymt1ehRJKNY3oKOMB+Ix1nZZMn4TNdnsw8clNG5UPZlUL8qCWlyYDOHyRfz2aqOQ+Hrk28Ang==",
+        "dependencies": {
+          "Microsoft.CodeAnalysis.Analyzer.Testing": "[1.1.2]",
+          "Microsoft.CodeAnalysis.Workspaces.Common": "1.0.1"
         }
       },
       "Microsoft.CodeAnalysis.Common": {
@@ -682,7 +701,13 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "dotnetsecurityanalyzers": {
+      "dotnetsecurityanalyzers.codefixes": {
+        "type": "Project",
+        "dependencies": {
+          "DotnetSecurityAnalyzers.Core": "[1.0.0, )"
+        }
+      },
+      "DotnetSecurityAnalyzers.Core": {
         "type": "Project"
       },
       "Microsoft.CodeAnalysis.Analyzers": {

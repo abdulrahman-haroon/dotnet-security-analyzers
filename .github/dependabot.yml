@@ -12,6 +12,7 @@ updates:
       - dependency-name: "Microsoft.CodeAnalysis.CSharp.Workspaces"
       - dependency-name: "Microsoft.CodeAnalysis.Analyzers"
       - dependency-name: "Microsoft.CodeAnalysis.CSharp.Analyzer.Testing"
+      - dependency-name: "Microsoft.CodeAnalysis.CSharp.CodeFix.Testing"
   - package-ecosystem: github-actions
     directory: /
     schedule:

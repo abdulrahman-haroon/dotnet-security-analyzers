@@ -15,6 +15,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{46D6
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulnerableApp", "samples\VulnerableApp\VulnerableApp.csproj", "{B083B8DF-11DB-4352-8797-27E442A5F516}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetSecurityAnalyzers.CodeFixes", "src\DotnetSecurityAnalyzers.CodeFixes\DotnetSecurityAnalyzers.CodeFixes.csproj", "{64D815A1-DC0A-4E03-9605-7FF152C13657}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetSecurityAnalyzers.Package", "src\DotnetSecurityAnalyzers.Package\DotnetSecurityAnalyzers.Package.csproj", "{CF7FD86F-537A-4763-BBA7-136BC29CF77C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,10 +40,20 @@ Global
 		{B083B8DF-11DB-4352-8797-27E442A5F516}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B083B8DF-11DB-4352-8797-27E442A5F516}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B083B8DF-11DB-4352-8797-27E442A5F516}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64D815A1-DC0A-4E03-9605-7FF152C13657}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64D815A1-DC0A-4E03-9605-7FF152C13657}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64D815A1-DC0A-4E03-9605-7FF152C13657}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64D815A1-DC0A-4E03-9605-7FF152C13657}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF7FD86F-537A-4763-BBA7-136BC29CF77C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF7FD86F-537A-4763-BBA7-136BC29CF77C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF7FD86F-537A-4763-BBA7-136BC29CF77C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF7FD86F-537A-4763-BBA7-136BC29CF77C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9121FFB7-6978-4DA8-A527-3AC05613B178} = {67BE3F36-81BB-4B42-A763-ACAF382A496E}
 		{AA6BF1C6-9CCA-4E12-BF51-F9A7007E1F80} = {BE2CF8A7-9CF6-4F86-97C0-9F1E8C144749}
 		{B083B8DF-11DB-4352-8797-27E442A5F516} = {46D65E99-8A7E-46FB-8CF3-BEAFECFF8CCF}
+		{64D815A1-DC0A-4E03-9605-7FF152C13657} = {67BE3F36-81BB-4B42-A763-ACAF382A496E}
+		{CF7FD86F-537A-4763-BBA7-136BC29CF77C} = {67BE3F36-81BB-4B42-A763-ACAF382A496E}
 	EndGlobalSection
 EndGlobal

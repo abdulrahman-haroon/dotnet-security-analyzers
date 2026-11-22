@@ -15,6 +15,8 @@ namespace DotnetSecurityAnalyzers.Tests;
 internal static class Verify<TAnalyzer>
     where TAnalyzer : DiagnosticAnalyzer, new()
 {
+    public static ReferenceAssemblies References => Net8WithAspNetCore;
+
     private static readonly ReferenceAssemblies Net8WithAspNetCore =
         new ReferenceAssemblies(
                 "net8.0",

@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Builds the single NuGet package: analyzers + code fixes in analyzers/dotnet/cs. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+
+    <PackageId>DotnetSecurityAnalyzers</PackageId>
+    <Version>0.2.0</Version>
+    <Authors>dotnet-security-analyzers contributors</Authors>
+    <Description>Roslyn analyzers that catch ASP.NET Core security mistakes as you type, with one-click fixes: endpoints with no authorization, CORS that trusts every origin with credentials, hardcoded JWT signing keys, the developer exception page in production, weakened login cookies.</Description>
+    <PackageTags>roslyn analyzer codefix security aspnetcore sast owasp</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/abdulrahman-haroon/dotnet-security-analyzers</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/abdulrahman-haroon/dotnet-security-analyzers</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- Analyzer-only package: it never becomes a runtime dependency of the consumer's app. -->
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <!-- NU5128: no lib/ folder, which is expected for an analyzer-only package. -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzersToPackage</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetSecurityAnalyzers\DotnetSecurityAnalyzers.csproj" />
+    <ProjectReference Include="..\DotnetSecurityAnalyzers.CodeFixes\DotnetSecurityAnalyzers.CodeFixes.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <Target Name="_AddAnalyzersToPackage">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(OutputPath)DotnetSecurityAnalyzers.dll" PackagePath="analyzers/dotnet/cs" />
+      <TfmSpecificPackageFile Include="$(OutputPath)DotnetSecurityAnalyzers.CodeFixes.dll" PackagePath="analyzers/dotnet/cs" />
+    </ItemGroup>
+  </Target>
+
+</Project>

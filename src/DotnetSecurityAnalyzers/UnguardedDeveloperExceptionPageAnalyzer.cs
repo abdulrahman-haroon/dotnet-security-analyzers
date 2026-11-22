@@ -37,6 +37,9 @@ public sealed class UnguardedDeveloperExceptionPageAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(start =>
         {
+            if (Symbols.IsTestProject(start.Compilation))
+                return;
+
             var extensions = start.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Builder.DeveloperExceptionPageExtensions");
             if (extensions is null)
                 return;

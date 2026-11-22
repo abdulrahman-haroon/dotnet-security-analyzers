@@ -78,6 +78,7 @@ jobs:
           }
           start=$(date +%s); build -p:DsaAnalyzerPath="$DLL" > with.log 2>&1 || { tail -50 with.log; exit 1; }; with=$(( $(date +%s) - start ))
           start=$(date +%s); build > without.log 2>&1 || { tail -50 without.log; exit 1; }; without=$(( $(date +%s) - start ))
+          echo "BUILD-TIME $NAME without=${without}s with=${with}s"
 
           grep -oE "[^ ]+\.cs\([0-9]+,[0-9]+\): warning DSA[0-9]+: [^[]*" with.log \
             | sed "s#^$GITHUB_WORKSPACE/app/##" | sort -u > warnings.txt || true

@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
@@ -23,10 +24,14 @@ internal static class Verify<TAnalyzer>
                 new PackageIdentity("Microsoft.AspNetCore.App.Ref", "8.0.20"),
                 new PackageIdentity("Microsoft.IdentityModel.Tokens", "8.14.0")));
 
-    public static Task AnalyzerAsync(string source) =>
-        new CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
+    public static Task AnalyzerAsync(string source, params MetadataReference[] extraReferences)
+    {
+        var test = new CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
         {
             TestCode = source,
             ReferenceAssemblies = Net8WithAspNetCore,
-        }.RunAsync();
+        };
+        test.TestState.AdditionalReferences.AddRange(extraReferences);
+        return test.RunAsync();
+    }
 }

@@ -112,6 +112,60 @@ public class MissingAuthorizationAnalyzerTests
         }
         """);
 
+    // ---------- Filter-based authorization (found in nopCommerce by the real-world check) ----------
+
+    [Fact]
+    public Task Authorization_filter_attributes_count() => VerifyCS.AnalyzerAsync(Usings + """
+
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Mvc.Filters;
+
+        // Wraps a filter type we can't see, like nopCommerce's [AuthorizeAdmin]: recognised by name.
+        public sealed class AuthorizeAdminAttribute : TypeFilterAttribute
+        {
+            public AuthorizeAdminAttribute() : base(typeof(object)) { }
+        }
+
+        // Is itself an authorization filter: recognised by interface.
+        public sealed class ApiKeyAttribute : Attribute, IAsyncAuthorizationFilter
+        {
+            public Task OnAuthorizationAsync(AuthorizationFilterContext context) => Task.CompletedTask;
+        }
+
+        [AuthorizeAdmin]
+        public abstract class BaseAdminController : Controller { }
+
+        public class ProductsController : BaseAdminController
+        {
+            public IActionResult List() => View();
+        }
+
+        public class WebhooksController : ControllerBase
+        {
+            [ApiKey]
+            public IActionResult Receive() => Ok();
+        }
+        """);
+
+    [Fact]
+    public Task Unrelated_filter_attributes_do_not_count() => VerifyCS.AnalyzerAsync(Usings + """
+
+        using Microsoft.AspNetCore.Mvc.Filters;
+
+        public sealed class LogRequestAttribute : ActionFilterAttribute { }
+
+        [LogRequest]
+        public class OrdersController : ControllerBase
+        {
+            public IActionResult {|DSA001:List|}() => Ok();
+        }
+        """);
+
+    [Fact]
+    public Task Test_projects_are_skipped() => VerifyCS.AnalyzerAsync(
+        Usings + OpenController,
+        Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(FactAttribute).Assembly.Location));
+
     // ---------- Global protection (controllers) ----------
 
     private const string OpenController = """

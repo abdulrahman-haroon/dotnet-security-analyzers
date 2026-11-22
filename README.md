@@ -81,6 +81,8 @@ dotnet_diagnostic.DSA002.severity = none    # turn off
 
 For one line of code: `#pragma warning disable DSA001`, together with a comment saying why.
 
+**Test projects are skipped automatically.** Projects that reference xUnit, NUnit, MSTest, TUnit or `Microsoft.AspNetCore.Mvc.Testing` get no DSA warnings, because fake keys and throwaway endpoints are normal there.
+
 ## 6. How the repo is organised
 
 - [src/DotnetSecurityAnalyzers/](src/DotnetSecurityAnalyzers/): the analyzers (one file per rule), packed into the NuGet package. Rule release tracking: [Unshipped](src/DotnetSecurityAnalyzers/AnalyzerReleases.Unshipped.md) / [Shipped](src/DotnetSecurityAnalyzers/AnalyzerReleases.Shipped.md).

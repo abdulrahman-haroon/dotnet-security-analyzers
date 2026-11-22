@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -21,7 +23,14 @@ internal static class Symbols
         return type is not null && type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, target));
     }
 
-    /// <summary>True if the symbol has an attribute whose class is, derives from, or implements <paramref name="target"/>.</summary>
-    public static bool HasAttribute(ISymbol symbol, INamedTypeSymbol target) =>
-        symbol.GetAttributes().Any(a => IsOrInherits(a.AttributeClass, target));
+    private static readonly ImmutableHashSet<string> TestFrameworkAssemblies = ImmutableHashSet.Create(
+        StringComparer.OrdinalIgnoreCase,
+        "xunit.core", "xunit.v3.core", "nunit.framework", "Microsoft.VisualStudio.TestPlatform.TestFramework",
+        "TUnit.Core", "Microsoft.AspNetCore.Mvc.Testing");
+
+    /// <summary>
+    /// Test projects use fake keys and throwaway endpoints on purpose; warning there is noise.
+    /// </summary>
+    public static bool IsTestProject(Compilation compilation) =>
+        compilation.ReferencedAssemblyNames.Any(a => TestFrameworkAssemblies.Contains(a.Name));
 }

@@ -36,6 +36,9 @@ public sealed class CorsAnyOriginWithCredentialsAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(start =>
         {
+            if (Symbols.IsTestProject(start.Compilation))
+                return;
+
             var builder = start.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder");
             if (builder is null)
                 return;

@@ -46,6 +46,9 @@ public sealed class MissingAuthorizationAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(start =>
         {
+            if (Symbols.IsTestProject(start.Compilation))
+                return;
+
             var compilation = start.Compilation;
             var authorizeData = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Authorization.IAuthorizeData");
             var allowAnonymous = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Authorization.IAllowAnonymous");
@@ -76,7 +79,7 @@ public sealed class MissingAuthorizationAnalyzer : DiagnosticAnalyzer
         if (!IsAction(method, known) || !IsController(controller, known))
             return;
 
-        if (HasAuthAttribute(method, known) || TypeHasAttribute(controller, known.AuthorizeData) || TypeHasAttribute(controller, known.AllowAnonymous))
+        if (HasAuthAttribute(method, known) || TypeHasAttribute(controller, a => IsAuthAttribute(a, known)))
             return;
 
         if (global.Value.AllEndpoints || global.Value.AllControllers)
@@ -92,7 +95,7 @@ public sealed class MissingAuthorizationAnalyzer : DiagnosticAnalyzer
             method.IsStatic || method.IsAbstract || method.IsGenericMethod || method.IsImplicitlyDeclared)
             return false;
 
-        if (known.NonAction is not null && MethodHasAttribute(method, known.NonAction))
+        if (known.NonAction is not null && MethodHasAttribute(method, a => Symbols.IsOrInherits(a.AttributeClass, known.NonAction)))
             return false;
 
         // Overrides of object.ToString/Equals/GetHashCode are not actions.
@@ -113,11 +116,11 @@ public sealed class MissingAuthorizationAnalyzer : DiagnosticAnalyzer
         if (type.TypeKind != TypeKind.Class || type.IsAbstract || type.IsGenericType || !IsPubliclyVisible(type))
             return false;
 
-        if (known.NonController is not null && TypeHasAttribute(type, known.NonController))
+        if (known.NonController is not null && TypeHasAttribute(type, a => Symbols.IsOrInherits(a.AttributeClass, known.NonController)))
             return false;
 
         return type.Name.EndsWith("Controller", StringComparison.Ordinal) ||
-               TypeHasAttribute(type, known.ControllerAttribute!);
+               TypeHasAttribute(type, a => Symbols.IsOrInherits(a.AttributeClass, known.ControllerAttribute!));
     }
 
     private static bool IsPubliclyVisible(INamedTypeSymbol type)
@@ -132,22 +135,22 @@ public sealed class MissingAuthorizationAnalyzer : DiagnosticAnalyzer
     }
 
     // Authorization attributes are inherited from base controllers, like ASP.NET Core does.
-    private static bool TypeHasAttribute(INamedTypeSymbol? type, INamedTypeSymbol attribute)
+    private static bool TypeHasAttribute(INamedTypeSymbol? type, Func<AttributeData, bool> match)
     {
         for (var t = type; t is not null; t = t.BaseType)
         {
-            if (Symbols.HasAttribute(t, attribute))
+            if (t.GetAttributes().Any(match))
                 return true;
         }
 
         return false;
     }
 
-    private static bool MethodHasAttribute(IMethodSymbol? method, INamedTypeSymbol attribute)
+    private static bool MethodHasAttribute(IMethodSymbol? method, Func<AttributeData, bool> match)
     {
         for (var m = method; m is not null; m = m.OverriddenMethod)
         {
-            if (Symbols.HasAttribute(m, attribute))
+            if (m.GetAttributes().Any(match))
                 return true;
         }
 
@@ -155,7 +158,31 @@ public sealed class MissingAuthorizationAnalyzer : DiagnosticAnalyzer
     }
 
     private static bool HasAuthAttribute(IMethodSymbol method, KnownTypes known) =>
-        MethodHasAttribute(method, known.AuthorizeData) || MethodHasAttribute(method, known.AllowAnonymous);
+        MethodHasAttribute(method, a => IsAuthAttribute(a, known));
+
+    /// <summary>
+    /// An attribute that states who may call the endpoint: [Authorize]/[AllowAnonymous] (or anything implementing
+    /// their interfaces), an attribute that is itself an authorization filter, or a filter attribute named like one
+    /// (e.g. [AuthorizeAdmin] : TypeFilterAttribute, [CheckPermission]). The filter type hidden inside a
+    /// TypeFilterAttribute can't be seen from a referenced DLL, so the name is the best available signal.
+    /// </summary>
+    private static bool IsAuthAttribute(AttributeData attribute, KnownTypes known)
+    {
+        var type = attribute.AttributeClass;
+        if (type is null)
+            return false;
+
+        if (Symbols.IsOrInherits(type, known.AuthorizeData) || Symbols.IsOrInherits(type, known.AllowAnonymous) ||
+            (known.AuthorizationFilter is not null && Symbols.IsOrInherits(type, known.AuthorizationFilter)) ||
+            (known.AsyncAuthorizationFilter is not null && Symbols.IsOrInherits(type, known.AsyncAuthorizationFilter)))
+            return true;
+
+        // shortcut: name-based for custom filter attributes; an unrelated filter named e.g. "AccessLog" would silence the rule.
+        return known.FilterMetadata is not null && Symbols.IsOrInherits(type, known.FilterMetadata) &&
+               (type.Name.IndexOf("Authoriz", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                type.Name.IndexOf("Permission", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                type.Name.IndexOf("Access", StringComparison.OrdinalIgnoreCase) >= 0);
+    }
 
     // ---------- Minimal APIs ----------
 
@@ -376,5 +403,8 @@ public sealed class MissingAuthorizationAnalyzer : DiagnosticAnalyzer
         public INamedTypeSymbol? NonAction { get; } = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.NonActionAttribute");
         public INamedTypeSymbol? EndpointRouteBuilderExtensions { get; } = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions");
         public INamedTypeSymbol? WebApplication { get; } = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Builder.WebApplication");
+        public INamedTypeSymbol? FilterMetadata { get; } = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata");
+        public INamedTypeSymbol? AuthorizationFilter { get; } = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.Filters.IAuthorizationFilter");
+        public INamedTypeSymbol? AsyncAuthorizationFilter { get; } = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.Filters.IAsyncAuthorizationFilter");
     }
 }

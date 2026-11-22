@@ -33,6 +33,9 @@ public sealed class InsecureCookieBuilderAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(start =>
         {
+            if (Symbols.IsTestProject(start.Compilation))
+                return;
+
             var cookieBuilder = start.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.CookieBuilder");
             var securePolicy = start.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.CookieSecurePolicy");
             if (cookieBuilder is null || securePolicy is null)

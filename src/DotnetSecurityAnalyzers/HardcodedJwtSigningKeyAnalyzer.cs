@@ -36,6 +36,9 @@ public sealed class HardcodedJwtSigningKeyAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(start =>
         {
+            if (Symbols.IsTestProject(start.Compilation))
+                return;
+
             var compilation = start.Compilation;
             var keyType = compilation.GetTypeByMetadataName("Microsoft.IdentityModel.Tokens.SymmetricSecurityKey");
             var encoding = compilation.GetTypeByMetadataName("System.Text.Encoding");

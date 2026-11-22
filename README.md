@@ -45,6 +45,19 @@ That's all. Warnings appear in your IDE and in `dotnet build`. The package adds 
 
 Each rule page explains the risk, shows the fix, and lists the rule's known limits.
 
+### Tested on real apps
+
+Before each release, the analyzers run against popular open-source ASP.NET Core apps (the [Real-world check](.github/workflows/realworld.yml) workflow, pinned commits). Latest results:
+
+| App | Warnings | What they were |
+|-----|----------|----------------|
+| [eShopOnWeb](https://github.com/dotnet-architecture/eShopOnWeb) (Microsoft) | 3 | JWT signing key hardcoded as a constant (×2); login endpoint not marked `[AllowAnonymous]` |
+| [fullstackhero](https://github.com/fullstackhero/dotnet-starter-kit) | 1 | An `AllowAll` setting turns on any-origin CORS **with credentials** |
+| [nopCommerce](https://github.com/nopSolutions/nopCommerce) | 10 | A config flag can show the developer exception page in production; 9 public endpoints (install wizard, error page, keep-alive, scheduled-task runner) not marked `[AllowAnonymous]` |
+| [CleanArchitecture](https://github.com/jasontaylordev/CleanArchitecture) | 0 | — |
+
+**0 false positives** in about 1,300 endpoints. Every warning is either a real security risk or a public endpoint that doesn't say it's public, which is what DSA001 asks you to make explicit.
+
 ## 4. Turn on Microsoft's built-in security rules too
 
 The .NET SDK already ships many security rules (SQL injection, weak crypto, insecure deserialization, disabled certificate or token validation, and more), but **most are switched off by default**. This package does not repeat them. Turn them on by adding one line to your `.csproj`:

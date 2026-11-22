@@ -64,8 +64,10 @@ jobs:
           rm -f app/global.json
           for t in $TARGETS; do dotnet restore "app/$t"; done
 
-      # The "with analyzer" build runs FIRST, so any warm-up advantage goes to the baseline:
-      # the measured overhead is, if anything, too high.
+      # 1. Warm-up build (not timed) so caches and the compiler server are hot for both measured builds.
+      # 2. Timed build without the analyzer, then with it.
+      # 3. ReportAnalyzer makes the compiler print the exact time spent in each analyzer, which is
+      #    the precise overhead number (wall-clock times are noisy on shared runners).
       - name: Build with and without the analyzer
         run: |
           INJECT="$GITHUB_WORKSPACE/dsa/eng/realworld/inject.targets"
@@ -76,16 +78,23 @@ jobs:
                 -p:CustomAfterMicrosoftCommonTargets="$INJECT" "$@"
             done
           }
-          start=$(date +%s); build -p:DsaAnalyzerPath="$DLL" > with.log 2>&1 || { tail -50 with.log; exit 1; }; with=$(( $(date +%s) - start ))
+          build > warmup.log 2>&1 || { tail -50 warmup.log; exit 1; }
           start=$(date +%s); build > without.log 2>&1 || { tail -50 without.log; exit 1; }; without=$(( $(date +%s) - start ))
+          start=$(date +%s); build -p:DsaAnalyzerPath="$DLL" -p:ReportAnalyzer=true -v:d > with.log 2>&1 || { tail -50 with.log; exit 1; }; with=$(( $(date +%s) - start ))
           echo "BUILD-TIME $NAME without=${without}s with=${with}s"
+
+          # Per-project lines like "0.012   2   DotnetSecurityAnalyzers (...)" -> sum of seconds spent in our analyzer.
+          ours=$(grep -E "^\s+[0-9.<]+\s+[0-9]+\s+DotnetSecurityAnalyzers," with.log | awk '{gsub("<","",$1); s+=$1} END {printf "%.3f", s}')
+          total=$(grep -E "Total analyzer execution time:" with.log | grep -oE "[0-9.]+" | awk '{s+=$1} END {printf "%.3f", s}')
+          echo "ANALYZER-TIME $NAME ours=${ours}s all-analyzers=${total}s"
 
           grep -oE "[^ ]+\.cs\([0-9]+,[0-9]+\): warning DSA[0-9]+: [^[]*" with.log \
             | sed "s#^$GITHUB_WORKSPACE/app/##" | sort -u > warnings.txt || true
 
           {
             echo "## $NAME ($REPO@${SHA:0:12})"
-            echo "Build time: **${without}s** without, **${with}s** with the analyzer."
+            echo "Build time: **${without}s** without, **${with}s** with the analyzer (wall clock, noisy)."
+            echo "Time spent inside DotnetSecurityAnalyzers: **${ours}s** (all analyzers in the build: ${total}s)."
             echo
             echo "| Rule | Warnings |"
             echo "|------|----------|"

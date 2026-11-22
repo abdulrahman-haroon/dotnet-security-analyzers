@@ -1,0 +1,57 @@
+name: Release
+
+# Runs when you push a version tag, e.g.  git tag v0.1.0 && git push origin v0.1.0
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # GitHub environment: add yourself as a "required reviewer" in repo Settings -> Environments
+    # to approve each release by hand before it reaches nuget.org.
+    environment: release
+    permissions:
+      contents: read
+      id-token: write # lets this job prove its identity to nuget.org (Trusted Publishing); no API key is stored anywhere
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+
+      # The package version comes from the tag (v0.1.0 -> 0.1.0). Read via env, never ${{ }} inside run:, to avoid script injection.
+      - name: Read version from tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "Tag '$TAG' is not a version like v1.2.3" >&2
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - run: dotnet restore --locked-mode
+      - run: dotnet build -c Release --no-restore -p:Version="$VERSION"
+      - run: dotnet test -c Release --no-build
+      - run: dotnet pack src/DotnetSecurityAnalyzers -c Release --no-build -p:Version="$VERSION" -o artifacts
+
+      # Exchanges GitHub's identity token for a NuGet API key that expires within an hour.
+      - name: NuGet login
+        id: nuget
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Push to nuget.org
+        env:
+          NUGET_API_KEY: ${{ steps.nuget.outputs.NUGET_API_KEY }}
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json

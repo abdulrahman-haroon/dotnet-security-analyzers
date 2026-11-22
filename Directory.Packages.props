@@ -20,6 +20,6 @@
     <PackageVersion Include="System.Formats.Asn1" Version="8.0.2" />
 
     <!-- Sample app -->
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.23.0" />
   </ItemGroup>
 </Project>

@@ -41,4 +41,11 @@ app.MapPost("/api/transfer", (decimal amount) => Results.Ok(amount));
 var admin = app.MapGroup("/api/admin").RequireAuthorization();
 admin.MapDelete("/users/{id}", (int id) => Results.NoContent());
 
+// DSA007: password written in the code (fake value).
+var mailLogin = new System.Net.NetworkCredential("mailer", "FAKE-demo-password");
+
+// DSA008: the password ends up in the logs.
+app.MapPost("/api/login", (string password, ILogger<Program> logger) => logger.LogInformation("Login with {Password}", password))
+    .AllowAnonymous();
+
 app.Run();

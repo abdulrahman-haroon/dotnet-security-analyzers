@@ -5,9 +5,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
 
     <PackageId>DotnetSecurityAnalyzers</PackageId>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <Authors>dotnet-security-analyzers contributors</Authors>
-    <Description>Roslyn analyzers that catch ASP.NET Core security mistakes as you type, with one-click fixes: endpoints with no authorization, CORS that trusts every origin with credentials, hardcoded JWT signing keys, the developer exception page in production, weakened login cookies.</Description>
+    <Description>Roslyn analyzers that catch ASP.NET Core security mistakes as you type, with one-click fixes: endpoints with no authorization, CORS that trusts every origin with credentials, hardcoded JWT signing keys, the developer exception page in production, weakened login cookies, secrets in appsettings or code, secrets written to logs.</Description>
     <PackageTags>roslyn analyzer codefix security aspnetcore sast owasp</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/abdulrahman-haroon/dotnet-security-analyzers</PackageProjectUrl>
@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="build\DotnetSecurityAnalyzers.props" Pack="true" PackagePath="build" />
   </ItemGroup>
 
   <Target Name="_AddAnalyzersToPackage">

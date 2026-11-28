@@ -1,0 +1,6 @@
+<Project>
+  <!-- Hands the project's settings files to the compiler so DSA006 can read them. -->
+  <ItemGroup>
+    <AdditionalFiles Include="appsettings*.json" />
+  </ItemGroup>
+</Project>

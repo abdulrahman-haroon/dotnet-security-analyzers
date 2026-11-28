@@ -138,7 +138,7 @@ public sealed class UnguardedDeveloperExceptionPageAnalyzer : DiagnosticAnalyzer
 
     // shortcut: matches IsDevelopment()/IsEnvironment("Development") by name in an enclosing if / ?: ;
     // an early `if (!env.IsDevelopment()) return;` above the call is not recognised.
-    private static bool IsGuarded(SyntaxNode node)
+    internal static bool IsGuarded(SyntaxNode node)
     {
         SyntaxNode child = node;
         foreach (var ancestor in node.Ancestors())

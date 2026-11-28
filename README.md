@@ -21,7 +21,8 @@ Some security bugs are easy to write and easy to miss in code review:
 - a CORS policy that lets **any website** make logged-in requests to your API,
 - a JWT signing key pasted into the code, so anyone can forge tokens,
 - debug features left on in production (error pages, sensitive-data logging, detailed errors),
-- a login cookie that JavaScript can read or that travels over plain HTTP.
+- a login cookie that JavaScript can read or that travels over plain HTTP,
+- passwords and keys left in `appsettings.json` or in code, or written to the logs.
 
 This package flags them in the editor, before the code is committed, and **fixes most of them in one click** (lightbulb / `Ctrl+.`). It is built to **avoid false alarms**: when it can't be sure (for example, the app protects every endpoint globally), it stays silent.
 
@@ -42,12 +43,15 @@ That's all. Warnings appear in your IDE and in `dotnet build`. The package adds 
 | [DSA003](docs/rules/DSA003.md) | JWT signing key (`SymmetricSecurityKey`) hardcoded in source, also through variables | — (needs a human: move it to a secret store) | OWASP A02, CWE-321 |
 | [DSA004](docs/rules/DSA004.md) | Debug features left on in production: developer exception page, migrations endpoint, EF sensitive-data logging, detailed errors (SignalR, gRPC, Blazor), `ShowPII` | Wrap in `if (IsDevelopment())`, or remove it | OWASP A05, CWE-209, CWE-532 |
 | [DSA005](docs/rules/DSA005.md) | Auth/session/antiforgery cookie with `HttpOnly = false` or `SecurePolicy = None` | Set the safe value | OWASP A05, CWE-614, CWE-1004 |
+| [DSA006](docs/rules/DSA006.md) | Passwords, keys and connection-string passwords in `appsettings*.json` | — (needs a human) | OWASP A07, CWE-798 |
+| [DSA007](docs/rules/DSA007.md) | Password hardcoded in a connection string, `NetworkCredential` or Identity call | — (needs a human) | OWASP A07, CWE-798 |
+| [DSA008](docs/rules/DSA008.md) | Password, token, key or card number written to `ILogger` | — (needs a human) | OWASP A09, CWE-532 |
 
 Each rule page explains the risk, shows the fix, and lists the rule's known limits. Every fix also works as **Fix all** across a document, project or solution.
 
 ### Tested on real apps
 
-Before each release, the analyzers run against popular open-source ASP.NET Core apps (the [Real-world check](.github/workflows/realworld.yml) workflow, pinned commits). Latest results:
+The analyzers run against popular open-source ASP.NET Core apps (the [Real-world check](.github/workflows/realworld.yml) workflow, pinned commits). Latest results:
 
 | App | Warnings | What they were |
 |-----|----------|----------------|
@@ -57,6 +61,8 @@ Before each release, the analyzers run against popular open-source ASP.NET Core 
 | [CleanArchitecture](https://github.com/jasontaylordev/CleanArchitecture) | 0 | — |
 
 **0 false positives** in about 1,300 endpoints. Every warning is either a real security risk or a public endpoint that doesn't say it's public, which is what DSA001 asks you to make explicit.
+
+These results cover DSA001–DSA005. DSA006–DSA008 have not been measured on these apps yet.
 
 **Speed.** Time the compiler spent inside this package, as reported by the compiler itself (`-p:ReportAnalyzer=true`):
 

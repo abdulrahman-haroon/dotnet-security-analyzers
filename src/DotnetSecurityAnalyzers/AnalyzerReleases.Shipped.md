@@ -11,3 +11,13 @@ DSA002 | Security | Warning | CorsAnyOriginWithCredentialsAnalyzer
 DSA003 | Security | Warning | HardcodedJwtSigningKeyAnalyzer
 DSA004 | Security | Warning | UnguardedDeveloperExceptionPageAnalyzer
 DSA005 | Security | Warning | InsecureCookieBuilderAnalyzer
+
+## Release 0.3.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+DSA006 | Security | Warning | AppSettingsSecretAnalyzer
+DSA007 | Security | Warning | HardcodedCredentialAnalyzer
+DSA008 | Security | Warning | SensitiveDataLoggedAnalyzer

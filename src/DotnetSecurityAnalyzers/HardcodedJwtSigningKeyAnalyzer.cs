@@ -91,7 +91,7 @@ public sealed class HardcodedJwtSigningKeyAnalyzer : DiagnosticAnalyzer
     /// Follows a local variable or readonly field back to the value it was initialised with, as long as
     /// it is never assigned again. Stops at anything else (parameters, method calls, configuration).
     /// </summary>
-    private static IOperation Resolve(IOperation value, CancellationToken cancellationToken)
+    internal static IOperation Resolve(IOperation value, CancellationToken cancellationToken)
     {
         for (var hops = 0; hops < 5; hops++)
         {

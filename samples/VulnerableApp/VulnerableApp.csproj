@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <!-- Keep the DSA findings visible as warnings instead of failing the build. -->
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);DSA001;DSA002;DSA003;DSA004;DSA005</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);DSA001;DSA002;DSA003;DSA004;DSA005;DSA006;DSA007;DSA008</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,5 +19,8 @@
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <!-- A project reference does not bring the package's props, so import them: this lets DSA006 see appsettings.json. -->
+  <Import Project="..\..\src\DotnetSecurityAnalyzers.Package\build\DotnetSecurityAnalyzers.props" />
 
 </Project>

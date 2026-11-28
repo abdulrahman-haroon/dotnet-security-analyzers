@@ -55,25 +55,23 @@ The analyzers run against popular open-source ASP.NET Core apps (the [Real-world
 
 | App | Warnings | What they were |
 |-----|----------|----------------|
-| [eShopOnWeb](https://github.com/dotnet-architecture/eShopOnWeb) (Microsoft) | 3 | JWT signing key hardcoded as a constant (×2); login endpoint not marked `[AllowAnonymous]` |
-| [fullstackhero](https://github.com/fullstackhero/dotnet-starter-kit) | 1 | An `AllowAll` setting turns on any-origin CORS **with credentials** |
+| [eShopOnWeb](https://github.com/dotnet-architecture/eShopOnWeb) (Microsoft) | 9 | JWT signing key hardcoded as a constant (×2); the same default password seeded for two accounts on every start; database passwords in `appsettings.Docker.json` (×4); login endpoint not marked `[AllowAnonymous]` |
+| [fullstackhero](https://github.com/fullstackhero/dotnet-starter-kit) | 2 | An `AllowAll` setting turns on any-origin CORS **with credentials**; database password in `appsettings.json` |
 | [nopCommerce](https://github.com/nopSolutions/nopCommerce) | 10 | A config flag can show the developer exception page in production; 9 public endpoints (install wizard, error page, keep-alive, scheduled-task runner) not marked `[AllowAnonymous]` |
-| [CleanArchitecture](https://github.com/jasontaylordev/CleanArchitecture) | 0 | — |
+| [CleanArchitecture](https://github.com/jasontaylordev/CleanArchitecture) | 2 | Database password in `appsettings.PostgreSQL.json`; **false positive:** a hardcoded administrator password that is only seeded in Development (DSA007 can't see a check made in another file) |
 
-**0 false positives** in about 1,300 endpoints. Every warning is either a real security risk or a public endpoint that doesn't say it's public, which is what DSA001 asks you to make explicit.
-
-These results cover DSA001–DSA005. DSA006–DSA008 have not been measured on these apps yet.
+**1 false positive in 23 warnings.** The rest are real security risks, committed passwords (some of them local or Docker defaults), or public endpoints that don't say they're public, which is what DSA001 asks you to make explicit.
 
 **Speed.** Time the compiler spent inside this package, as reported by the compiler itself (`-p:ReportAnalyzer=true`):
 
 | App | Our analyzers | All analyzers in that build | Full build |
 |-----|---------------|-----------------------------|------------|
-| CleanArchitecture | 0.07 s | 0.8 s | ~10 s |
-| eShopOnWeb | 0.12 s | 3.0 s | ~20 s |
-| fullstackhero | 0.10 s | 88.8 s | ~60 s |
-| nopCommerce | 0.28 s | 9.3 s | ~50 s |
+| CleanArchitecture | 0.08 s | 0.6 s | ~7 s |
+| eShopOnWeb | 0.14 s | 3.1 s | ~16 s |
+| fullstackhero | 0.28 s | 63.1 s | ~41 s |
+| nopCommerce | 0.26 s | 4.9 s | ~28 s |
 
-That is well under 1% of build time.
+That is about 1% of build time or less.
 
 ## 4. Turn on Microsoft's built-in security rules too
 

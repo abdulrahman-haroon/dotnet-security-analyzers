@@ -99,6 +99,15 @@ public class SecretAnalyzerTests
                     await users.CreateAsync(user, "FAKE-pass");
         """));
 
+    [Fact]
+    public Task Development_flag_passed_as_bool_counts_as_a_guard() => Logged.AnalyzerAsync(LogCode("""
+                var isDevelopment = userName == "dev";
+                if (isDevelopment)
+                    log.LogDebug("{P}", password);
+                if (!isDevelopment)
+                    log.LogDebug("{P}", {|DSA008:password|});
+        """));
+
     private static string LogCode(string body) => """
         using Microsoft.Extensions.Logging;
 

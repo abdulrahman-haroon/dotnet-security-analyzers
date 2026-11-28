@@ -176,8 +176,16 @@ public sealed class UnguardedDeveloperExceptionPageAnalyzer : DiagnosticAnalyzer
 
     // True if the condition contains a Development check with the wanted polarity (`!` flips it).
     private static bool ChecksDevelopment(ExpressionSyntax condition, bool negated) =>
-        condition.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>().Any(check =>
-            IsDevelopmentCheck(check) && IsNegated(check, condition) == negated);
+        condition.DescendantNodesAndSelf().OfType<ExpressionSyntax>().Any(check =>
+            (check is InvocationExpressionSyntax call ? IsDevelopmentCheck(call) : IsDevelopmentFlag(check)) &&
+            IsNegated(check, condition) == negated);
+
+    // `if (isDevelopment)`: the environment check was done by the caller and passed in as a bool.
+    private static bool IsDevelopmentFlag(ExpressionSyntax expression) =>
+        expression is IdentifierNameSyntax identifier &&
+        identifier.Identifier.ValueText.TrimStart('_').ToUpperInvariant() is "ISDEVELOPMENT" or "ISDEV" &&
+        identifier.Parent is not InvocationExpressionSyntax &&
+        identifier.Parent?.Parent is not InvocationExpressionSyntax;
 
     private static bool IsDevelopmentCheck(InvocationExpressionSyntax call)
     {
